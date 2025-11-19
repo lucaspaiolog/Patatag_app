@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brandGrayLight"
+    tools:context="br.edu.fatecpg.patatagapp.view.AdicionarPetActivity">
+
+    <!-- Toolbar customizada -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/brandGrayLight"
+        app:elevation="0dp"
+        app:layout_constraintTop_toTopOf="parent">
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize">
+            <ImageButton
+                android:id="@+id/btnBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:src="@drawable/ic_arrow_back"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Voltar"
+                app:tint="@color/brandText" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="Adicionar Novo Pet"
+                android:textColor="@color/brandText"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </androidx.appcompat.widget.Toolbar>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/appBarLayout"
+        app:layout_constraintBottom_toTopOf="@id/btnSalvarPet"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="32dp">
+
+            <!-- Foto do Pet -->
+            <ImageView
+                android:id="@+id/imgPet"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ic_pet_placeholder"
+                android:background="@drawable/edittext_background"
+                android:scaleType="centerCrop"
+                android:padding="24dp"
+                app:tint="@color/brandGray"
+                android:contentDescription="Foto do Pet" />
+
+            <TextView
+                android:id="@+id/tvAddPhoto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Adicionar Foto"
+                android:textColor="@color/brandOrange"
+                android:textStyle="bold"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:padding="8dp"/>
+
+            <!-- Nome do Pet -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPetName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Nome do Pet"
+                app:boxStrokeWidth="0dp"
+                app:boxStrokeWidthFocused="0dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="16dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPetName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/edittext_background"
+                    android:inputType="textPersonName"
+                    android:padding="16dp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Tipo do Pet (Spinner) -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tipo"
+                android:textColor="@color/brandGray"
+                android:textSize="12sp"
+                android:layout_marginStart="8dp"/>
+            <Spinner
+                android:id="@+id/spinnerPetType"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="@drawable/edittext_background"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- ID do Dispositivo -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilDeviceId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="ID do Dispositivo Patatag"
+                app:boxStrokeWidth="0dp"
+                app:boxStrokeWidthFocused="0dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDeviceId"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/edittext_background"
+                    android:inputType="text"
+                    android:padding="16dp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Botão Salvar -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSalvarPet"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:background="@drawable/button_background_orange"
+        android:text="Salvar Pet"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:elevation="4dp"
+        android:layout_margin="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

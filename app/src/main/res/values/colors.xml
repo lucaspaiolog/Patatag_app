@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Cores da Marca Patatag -->
+    <color name="brandOrange">#F97316</color>
+    <color name="brandOrangeDark">#EA580C</color>
+    <color name="brandGray">#4B5563</color>
+    <color name="brandGrayLight">#F3F4F6</color>
+    <color name="brandText">#1F2937</color>
+    <color name="green_700">#15803D</color>
+    <color name="red_700">#B91C1C</color>
+</resources>

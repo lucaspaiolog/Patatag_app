@@ -1,0 +1,18 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.Patatag" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Cor primária (barra de status, etc) -->
+        <item name="colorPrimary">@color/brandOrange</item>
+        <item name="colorPrimaryVariant">@color/brandOrangeDark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Cor secundária (FABS, etc) -->
+        <item name="colorSecondary">@color/brandOrange</item>
+        <item name="colorSecondaryVariant">@color/brandOrangeDark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <!-- Cor da barra de status -->
+        <item name="android:statusBarColor">@color/brandGrayLight</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <!-- Cor de fundo padrão -->
+        <item name="android:windowBackground">@color/brandGrayLight</item>
+    </style>
+</resources>
