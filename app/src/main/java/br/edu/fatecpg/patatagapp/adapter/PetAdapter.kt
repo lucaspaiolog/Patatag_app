@@ -3,7 +3,7 @@ package br.edu.fatecpg.patatagapp.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.patatag.app.databinding.ListItemPetBinding
+import br.edu.fatecpg.patatagapp.databinding.ListItemPetBinding
 import br.edu.fatecpg.patatagapp.model.Pet
 
 class PetAdapter(
@@ -39,15 +39,15 @@ class PetAdapter(
             binding.tvPetName.text = pet.name
             binding.tvPetStatus.text = pet.status
 
-            // TODO: Mudar a cor do status com base no texto
-            // (ex: "Seguro" -> Verde, "Passeando" -> Amarelo)
-
-            // TODO: Carregar a imagem real do pet (usando Glide, por exemplo)
-            // if (pet.imageUrl != null) {
-            //     Glide.with(itemView.context).load(pet.imageUrl).into(binding.imgPet)
-            // } else {
-            //     binding.imgPet.setImageResource(R.drawable.ic_pet_placeholder)
-            // }
+            // Lógica simples para mudar a cor do status
+            // Se o texto contiver "Online", fica verde. Se não, cinza/padrão.
+            if (pet.status.contains("Online", ignoreCase = true)) {
+                binding.tvPetStatus.setTextColor(itemView.context.getColor(android.R.color.holo_green_dark))
+                binding.tvPetStatus.setBackgroundResource(br.edu.fatecpg.patatagapp.R.drawable.status_background_green)
+            } else {
+                binding.tvPetStatus.setTextColor(itemView.context.getColor(android.R.color.darker_gray))
+                binding.tvPetStatus.background = null
+            }
 
             // Define a ação de clique no item
             itemView.setOnClickListener {
