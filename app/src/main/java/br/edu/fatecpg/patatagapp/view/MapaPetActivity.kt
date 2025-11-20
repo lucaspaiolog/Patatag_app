@@ -8,13 +8,13 @@ import androidx.appcompat.app.AppCompatActivity
 import br.edu.fatecpg.patatagapp.api.LocationDto
 import br.edu.fatecpg.patatagapp.api.PetDto
 import br.edu.fatecpg.patatagapp.api.RetrofitClient
+import br.edu.fatecpg.patatagapp.databinding.ActivityMapaPetBinding
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.patatag.app.databinding.ActivityMapaPetBinding
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -32,12 +32,19 @@ class MapaPetActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityMapaPetBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val petIdString = intent.getStringExtra("PET_ID")
-        if (petIdString != null) {
-            petId = petIdString.toInt()
+        // Pega o ID do pet (agora como Int, vindo da HomeActivity)
+        val petIdExtra = intent.getIntExtra("PET_ID", -1)
+        if (petIdExtra != -1) {
+            petId = petIdExtra
         } else {
-            finish()
-            return
+            // Tenta pegar como String caso tenha sido passado errado
+            val petIdString = intent.getStringExtra("PET_ID")
+            if (petIdString != null) {
+                petId = petIdString.toInt()
+            } else {
+                finish()
+                return
+            }
         }
 
         val mapFragment = supportFragmentManager
@@ -75,11 +82,11 @@ class MapaPetActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (response.isSuccessful && response.body() != null) {
                     val pet = response.body()!!
                     binding.tvPetName.text = pet.name
-                    binding.tvBattery.text = "${pet.battery_level}%"
-                    binding.tvLastSeen.text = if (pet.is_online) "Status: Online" else "Status: Offline"
+                    binding.tvBattery.text = "${pet.batteryLevel}%"
+                    binding.tvLastSeen.text = if (pet.isOnline) "Status: Online" else "Status: Offline"
 
                     // Se tiver localização, já atualiza o mapa
-                    pet.last_location?.let { loc ->
+                    pet.lastLocation?.let { loc ->
                         updateMapLocation(LatLng(loc.latitude, loc.longitude))
                     }
                 }
@@ -114,7 +121,7 @@ class MapaPetActivity : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
             override fun onFailure(call: Call<LocationDto>, t: Throwable) {
-                // Falha silenciosa no loop para não spamar toasts
+                // Falha silenciosa no loop
             }
         })
     }

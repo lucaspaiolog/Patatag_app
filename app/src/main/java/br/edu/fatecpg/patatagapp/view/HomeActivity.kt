@@ -2,13 +2,14 @@ package br.edu.fatecpg.patatagapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import br.edu.fatecpg.patatagapp.adapter.PetAdapter
 import br.edu.fatecpg.patatagapp.api.PetsResponse
 import br.edu.fatecpg.patatagapp.api.RetrofitClient
 import br.edu.fatecpg.patatagapp.databinding.ActivityHomeBinding
+import br.edu.fatecpg.patatagapp.model.Pet
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -29,15 +30,13 @@ class HomeActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Recarrega a lista sempre que voltar para esta tela (ex: depois de adicionar um pet)
         loadPetsReal()
     }
 
     private fun setupRecyclerView() {
+        // Inicializa com lista vazia
         petAdapter = PetAdapter(emptyList()) { pet ->
             val intent = Intent(this, MapaPetActivity::class.java)
-            // Convertemos o ID String para Int se necessário, ou ajustamos a classe Pet.
-            // Assumindo que Pet.id é String no seu modelo local:
             intent.putExtra("PET_ID", pet.id)
             startActivity(intent)
         }
@@ -78,23 +77,24 @@ class HomeActivity : AppCompatActivity() {
     }
 
     private fun loadPetsReal() {
-        // Mostra algum indicativo de carregamento se quiser (ex: ProgressBar)
-
         RetrofitClient.instance.getPets().enqueue(object : Callback<PetsResponse> {
             override fun onResponse(call: Call<PetsResponse>, response: Response<PetsResponse>) {
                 if (response.isSuccessful && response.body() != null) {
                     val petsApi = response.body()!!.pets
 
-                    // Converte PetDto (API) -> Pet (App Local)
+                    // Converte PetDto (API) -> Pet (Modelo Local)
+                    // ATENÇÃO: Usando os nomes em camelCase definidos no ApiModels.kt
                     val petsLocal = petsApi.map { dto ->
                         Pet(
                             id = dto.id.toString(),
                             name = dto.name,
-                            status = if (dto.is_online) "Online - Bateria: ${dto.battery_level}%" else "Offline",
-                            imageUrl = dto.photo_url
+                            // Usando dto.isOnline e dto.batteryLevel (camelCase)
+                            status = if (dto.isOnline) "Online - Bateria: ${dto.batteryLevel}%" else "Offline",
+                            imageUrl = dto.photoUrl
                         )
                     }
 
+                    // Atualiza o adaptador
                     petAdapter.updatePets(petsLocal)
                 } else {
                     Toast.makeText(applicationContext, "Erro ao carregar pets", Toast.LENGTH_SHORT).show()
