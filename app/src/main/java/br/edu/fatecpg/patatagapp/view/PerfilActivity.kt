@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import br.edu.fatecpg.patatagapp.api.AuthResponse
 import br.edu.fatecpg.patatagapp.api.RetrofitClient
 import br.edu.fatecpg.patatagapp.databinding.ActivityPerfilBinding
+import br.edu.fatecpg.patatagapp.utils.SessionManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -16,23 +17,25 @@ class PerfilActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPerfilBinding
 
+    private lateinit var sessionManager: SessionManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPerfilBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        sessionManager = SessionManager(this)
 
         loadUserData()
         setupListeners()
     }
 
     private fun loadUserData() {
-        // TODO: Precisamos qu o backend tenha um endpoint GET /api/me ou GET /api/profile
-        // Como não tem, por enquanto deixei fixo
-        // Depois que implementar:
-        // @app.route('/api/me') -> return jsonify(current_user.to_dict())
+        val nome = sessionManager.getUserName()
+        val email = sessionManager.getUserEmail()
 
-        binding.tvUserName.text = "Usuário Logado" // Substituir por dados reais depois
-        binding.tvUserEmail.text = "usuario@email.com"
+        binding.tvUserName.text = nome
+        binding.tvUserEmail.text = email
     }
 
     private fun setupListeners() {
@@ -69,21 +72,21 @@ class PerfilActivity : AppCompatActivity() {
     }
 
     private fun fazerLogoutReal() {
-
         RetrofitClient.instance.logout().enqueue(object : Callback<AuthResponse> {
             override fun onResponse(call: Call<AuthResponse>, response: Response<AuthResponse>) {
-                // Independente se o servidor respondeu OK ou erro, no app nós saímos.
-                irParaLogin()
+                sairDoApp()
             }
-
             override fun onFailure(call: Call<AuthResponse>, t: Throwable) {
-                Toast.makeText(applicationContext, "Erro ao avisar servidor, saindo localmente...", Toast.LENGTH_SHORT).show()
-                irParaLogin()
+                sairDoApp()
             }
         })
     }
 
-    private fun irParaLogin() {
+    private fun sairDoApp() {
+        // Limpa os dados salvos
+        sessionManager.clearSession()
+
+        // Volta para o login
         val intent = Intent(this, LoginActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
