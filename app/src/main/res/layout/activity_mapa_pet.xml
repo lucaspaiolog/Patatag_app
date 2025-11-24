@@ -4,38 +4,37 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="br.edu.fatecpg.patatagapp.view.MapaPetActivity">
+    tools:context=".MapaPetActivity">
 
-    <!-- Google Map Fragment -->
+    <!-- Mapa -->
     <fragment
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- Botão de Voltar -->
-
-    <!-- Bottom Sheet com informações do Pet -->
+    <!-- Botão Voltar Flutuante -->
     <ImageButton
         android:id="@+id/btnBack"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_margin="16dp"
-        android:background="@drawable/ic_arrow_back"
+        android:background="@drawable/button_background_white_round"
         android:contentDescription="Voltar"
         android:elevation="8dp"
         android:src="@drawable/ic_arrow_back"
         app:tint="@color/brandText" />
 
+    <!-- Cartão de Informações (Bottom Sheet) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/bottomSheet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
+        android:layout_marginTop="-24dp"
         app:behavior_peekHeight="220dp"
         app:cardCornerRadius="24dp"
         app:cardElevation="8dp"
-        android:layout_marginTop="-24dp">
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -43,52 +42,52 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <!-- "Puxador" do Bottom Sheet -->
+            <!-- Puxador -->
             <View
                 android:layout_width="40dp"
                 android:layout_height="4dp"
-                android:background="@drawable/bottom_sheet_grabber"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bottom_sheet_grabber" />
 
-            <!-- Info Header -->
+            <!-- Cabeçalho do Pet -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/imgPet"
                     android:layout_width="56dp"
                     android:layout_height="56dp"
-                    android:src="@drawable/ic_pet_placeholder"
                     android:background="@drawable/edittext_background"
-                    android:scaleType="centerCrop"/>
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_pet_placeholder" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="16dp">
+                    android:orientation="vertical">
 
                     <TextView
                         android:id="@+id/tvPetName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        tools:text="Luke"
                         android:textColor="@color/brandText"
                         android:textSize="22sp"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold"
+                        tools:text="Luke" />
 
                     <TextView
                         android:id="@+id/tvLastSeen"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        tools:text="Visto por último: agora mesmo"
                         android:textColor="@color/brandGray"
-                        android:textSize="14sp"/>
+                        android:textSize="14sp"
+                        tools:text="Status: Online" />
                 </LinearLayout>
 
                 <!-- Bateria -->
@@ -96,45 +95,47 @@
                     android:id="@+id/tvBattery"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    tools:text="92%"
+                    android:drawablePadding="4dp"
                     android:textColor="@color/green_700"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    android:drawablePadding="4dp"
                     app:drawableStartCompat="@drawable/ic_battery"
-                    app:drawableTint="@color/green_700" />
+                    app:drawableTint="@color/green_700"
+                    tools:text="92%" />
             </LinearLayout>
 
-            <!-- Ações Rápidas -->
+            <!-- Botões de Ação -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
                 android:layout_marginTop="24dp"
-                android:weightSum="3"
-                android:baselineAligned="false">
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                android:weightSum="3">
 
                 <LinearLayout
                     android:id="@+id/btnActionHistory"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless">
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_history"
-                        app:tint="@color/brandGray"/>
+                        app:tint="@color/brandGray" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="Histórico"
                         android:textColor="@color/brandGray"
-                        android:textSize="12sp"
-                        android:layout_marginTop="4dp"/>
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -142,22 +143,24 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless">
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_geofence"
-                        app:tint="@color/brandGray"/>
+                        app:tint="@color/brandGray" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="Cerca Virtual"
                         android:textColor="@color/brandGray"
-                        android:textSize="12sp"
-                        android:layout_marginTop="4dp"/>
+                        android:textSize="12sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -165,22 +168,24 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:orientation="vertical"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     android:gravity="center"
-                    android:padding="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless">
+                    android:orientation="vertical"
+                    android:padding="8dp">
+
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_sound"
-                        app:tint="@color/brandGray"/>
+                        app:tint="@color/brandGray" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
                         android:text="Emitir Som"
                         android:textColor="@color/brandGray"
-                        android:textSize="12sp"
-                        android:layout_marginTop="4dp"/>
+                        android:textSize="12sp" />
                 </LinearLayout>
 
             </LinearLayout>

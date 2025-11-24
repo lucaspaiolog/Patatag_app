@@ -2,10 +2,8 @@ package br.edu.fatecpg.patatagapp.api
 
 import com.google.gson.annotations.SerializedName
 
-data class UserDto(
-    val id: Int,
-    val name: String,
-    val email: String,
+data class UpdateUserRequest(
+    val name: String? = null,
     @SerializedName("profile_image")
-    val profileImage: String?
+    val profileImage: String? = null
 )

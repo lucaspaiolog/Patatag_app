@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Permite conexões HTTP (Cleartext) apenas para o domínio local -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain> <!-- Para emulador -->
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">192.168.15.17</domain>
+        <!-- Se você usar dispositivo físico, adicione o IP do seu PC aqui também -->
+        <!-- <domain includeSubdomains="true">192.168.X.X</domain> -->
+    </domain-config>
+</network-security-config>
