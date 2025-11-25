@@ -28,7 +28,7 @@ O **Patatag App** atua como o cliente mobile para o ecossistema Patatag. Enquant
 - **Linguagem:** Kotlin
 - **Arquitetura:** MVC / ViewBinding
 - **Comunicação de Rede:** Retrofit2 + Gson + OkHttp3
-- **Mapas:** Google Maps SDK for Android
+- **Mapas:** Osmdroid
 - **Carregamento de Imagens:** Glide
 - **Design:** Material Design Components (XML)
 
