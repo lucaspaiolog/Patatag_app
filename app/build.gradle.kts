@@ -44,7 +44,7 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0") // Para ver os logs das requisições
-    implementation("com.google.android.gms:play-services-maps:18.2.0") // Google Maps
+    implementation("org.osmdroid:osmdroid-android:6.1.16")  // Mapa
     implementation("androidx.recyclerview:recyclerview:1.3.2") // Para a lista de pets
     implementation("androidx.cardview:cardview:1.0.0") // Para os cards
     implementation("com.github.bumptech.glide:glide:4.16.0")

@@ -38,6 +38,7 @@
                 android:textColor="@color/brandText"
                 android:textSize="20sp"
                 android:textStyle="bold" />
+
         </androidx.appcompat.widget.Toolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -174,5 +175,17 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <!-- Navegação Inferior -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        app:itemIconTint="@color/brandGray"
+        app:itemTextColor="@color/brandGray"
+        app:menu="@menu/bottom_nav_menu"
+        app:labelVisibilityMode="labeled"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -10,6 +10,8 @@ import br.edu.fatecpg.patatagapp.api.PetsResponse
 import br.edu.fatecpg.patatagapp.api.RetrofitClient
 import br.edu.fatecpg.patatagapp.databinding.ActivityHomeBinding
 import br.edu.fatecpg.patatagapp.model.Pet
+import br.edu.fatecpg.patatagapp.utils.SessionManager
+import br.edu.fatecpg.patatagapp.view.AlertsActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -18,11 +20,19 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private lateinit var petAdapter: PetAdapter
+    private lateinit var sessionManager: SessionManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        sessionManager = SessionManager(this)
+
+        // Atualiza cabeçalho com nome do usuário
+        sessionManager.getUserName()?.let {
+            binding.tvLocationLabel.text = "Olá, $it"
+        }
 
         setupRecyclerView()
         setupListeners()
@@ -31,20 +41,18 @@ class HomeActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         loadPetsReal()
+        // Seleciona o ícone correto na navegação
+        binding.bottomNavigation.selectedItemId = R.id.nav_home
     }
 
     private fun setupRecyclerView() {
-        // Inicializa com lista vazia
         petAdapter = PetAdapter(emptyList()) { pet ->
             val intent = Intent(this, MapaPetActivity::class.java)
             intent.putExtra("PET_ID", pet.id)
             startActivity(intent)
         }
-
-        binding.rvPets.apply {
-            layoutManager = LinearLayoutManager(this@HomeActivity)
-            adapter = petAdapter
-        }
+        binding.rvPets.layoutManager = LinearLayoutManager(this)
+        binding.rvPets.adapter = petAdapter
     }
 
     private fun setupListeners() {
@@ -58,13 +66,14 @@ class HomeActivity : AppCompatActivity() {
 
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when(item.itemId) {
-                R.id.nav_home -> true
+                R.id.nav_home -> true // Já estamos aqui
                 R.id.nav_history -> {
-                    Toast.makeText(this, "Histórico em breve", Toast.LENGTH_SHORT).show()
-                    true
+                    // Como não temos HistoryActivity pronta, vamos mostrar um aviso ou redirecionar para o Mapa
+                    Toast.makeText(this, "Acesse o histórico pelo Mapa do Pet", Toast.LENGTH_SHORT).show()
+                    false
                 }
                 R.id.nav_alerts -> {
-                    Toast.makeText(this, "Alertas em breve", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, AlertsActivity::class.java))
                     true
                 }
                 R.id.nav_profile -> {
@@ -81,28 +90,19 @@ class HomeActivity : AppCompatActivity() {
             override fun onResponse(call: Call<PetsResponse>, response: Response<PetsResponse>) {
                 if (response.isSuccessful && response.body() != null) {
                     val petsApi = response.body()!!.pets
-
-                    // Converte PetDto (API) -> Pet (Modelo Local)
-                    // ATENÇÃO: Usando os nomes em camelCase definidos no ApiModels.kt
                     val petsLocal = petsApi.map { dto ->
                         Pet(
                             id = dto.id.toString(),
                             name = dto.name,
-                            // Usando dto.isOnline e dto.batteryLevel (camelCase)
                             status = if (dto.isOnline) "Online - Bateria: ${dto.batteryLevel}%" else "Offline",
                             imageUrl = dto.photoUrl
                         )
                     }
-
-                    // Atualiza o adaptador
                     petAdapter.updatePets(petsLocal)
-                } else {
-                    Toast.makeText(applicationContext, "Erro ao carregar pets", Toast.LENGTH_SHORT).show()
                 }
             }
-
             override fun onFailure(call: Call<PetsResponse>, t: Throwable) {
-                Toast.makeText(applicationContext, "Erro de conexão: ${t.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(applicationContext, "Erro de conexão", Toast.LENGTH_SHORT).show()
             }
         })
     }

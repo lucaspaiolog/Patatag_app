@@ -39,6 +39,8 @@
         <activity android:name=".AdicionarPetActivity" />
         <activity android:name=".MapaPetActivity" />
         <activity android:name=".PerfilActivity" />
+        <activity android:name=".HistoryActivity" />
+        <activity android:name=".view.AlertsActivity" />
 
     </application>
 

@@ -1,187 +1,281 @@
 package br.edu.fatecpg.patatagapp
 
+import android.app.AlertDialog
+import android.content.Intent
+import android.graphics.Color
+import android.graphics.Paint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.preference.PreferenceManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import br.edu.fatecpg.patatagapp.api.LocationDto
-import br.edu.fatecpg.patatagapp.api.PetDto
-import br.edu.fatecpg.patatagapp.api.RetrofitClient
-import com.bumptech.glide.Glide // Import do Glide para imagens
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.patatag.app.databinding.ActivityMapaPetBinding
+import br.edu.fatecpg.patatagapp.api.*
+import br.edu.fatecpg.patatagapp.databinding.ActivityMapaPetBinding
+import com.bumptech.glide.Glide
+import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapEventsReceiver
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.overlay.MapEventsOverlay
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.Polygon
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class MapaPetActivity : AppCompatActivity(), OnMapReadyCallback {
+class MapaPetActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMapaPetBinding
-    private var mMap: GoogleMap? = null
     private var petId: Int = -1
     private val handler = Handler(Looper.getMainLooper())
-    private val updateInterval: Long = 5000 // Atualizar a cada 5 segundos
+    private val updateInterval: Long = 5000
+    private var isFirstUpdate = true
+
+    private var isAddingGeofence = false
+
+    // Referências aos overlays para poder limpar depois
+    private var petMarker: Marker? = null
+    private val geofencePolygons = mutableListOf<Polygon>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Configuração do Osmdroid (Essencial para carregar o mapa)
+        Configuration.getInstance().load(applicationContext, PreferenceManager.getDefaultSharedPreferences(applicationContext))
+
         binding = ActivityMapaPetBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Recupera o ID do Pet
         val petIdExtra = intent.getIntExtra("PET_ID", -1)
-        if (petIdExtra != -1) {
-            petId = petIdExtra
-        } else {
-            val petIdString = intent.getStringExtra("PET_ID")
-            if (petIdString != null) {
-                petId = petIdString.toInt()
-            } else {
-                finish()
-                return
-            }
+        if (petIdExtra != -1) petId = petIdExtra
+        else {
+            val str = intent.getStringExtra("PET_ID")
+            if(str != null) petId = str.toInt() else { finish(); return }
         }
 
-        // Inicializa o mapa
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this)
-
+        setupMap()
         setupListeners()
-
-        // Carrega dados iniciais (Nome, Foto, Status)
         loadPetDetails()
+    }
+
+    private fun setupMap() {
+        binding.map.setTileSource(TileSourceFactory.MAPNIK)
+        binding.map.setMultiTouchControls(true)
+
+        // Ponto inicial (São Paulo)
+        val startPoint = GeoPoint(-23.5505, -46.6333)
+        binding.map.controller.setZoom(15.0)
+        binding.map.controller.setCenter(startPoint)
+
+        // Detector de Cliques no Mapa
+        val mapEventsOverlay = MapEventsOverlay(object : MapEventsReceiver {
+            override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
+                if (isAddingGeofence && p != null) {
+                    confirmCreateGeofence(p)
+                    return true
+                }
+                return false
+            }
+            override fun longPressHelper(p: GeoPoint?): Boolean { return false }
+        })
+        binding.map.overlays.add(mapEventsOverlay)
+
+        loadGeofences()
+        startLocationUpdates()
     }
 
     private fun setupListeners() {
         binding.btnBack.setOnClickListener { finish() }
-        binding.btnActionHistory.setOnClickListener {
-            Toast.makeText(this, "Histórico em breve", Toast.LENGTH_SHORT).show()
-        }
+
         binding.btnActionGeofence.setOnClickListener {
-            Toast.makeText(this, "Cercas em breve", Toast.LENGTH_SHORT).show()
+            showGeofenceOptions()
         }
-        binding.btnActionSound.setOnClickListener {
-            Toast.makeText(this, "Função emitir som em breve", Toast.LENGTH_SHORT).show()
-        }
+
     }
 
-    override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
-        mMap?.uiSettings?.isZoomControlsEnabled = true
+    // --- GEOFENCING ---
 
-        // Começa o loop de atualização
-        startLocationUpdates()
-    }
+    private fun showGeofenceOptions() {
+        val options = arrayOf("Criar Nova Cerca (Toque no Mapa)", "Apagar Todas as Cercas", "Cancelar")
 
-    private fun loadPetDetails() {
-        RetrofitClient.instance.getPetDetails(petId).enqueue(object : Callback<PetDto> {
-            override fun onResponse(call: Call<PetDto>, response: Response<PetDto>) {
-                if (response.isSuccessful && response.body() != null) {
-                    val pet = response.body()!!
-
-                    // 1. Atualiza Textos
-                    binding.tvPetName.text = pet.name
-                    binding.tvLastSeen.text = if (pet.isOnline) "Status: Online" else "Status: Offline"
-
-                    // 2. Atualiza Bateria
-                    updateBatteryUI(pet.batteryLevel)
-
-                    // 3. Carrega Foto do Pet (NOVO!)
-                    if (!pet.photoUrl.isNullOrEmpty()) {
-                        // Se a URL for relativa (/static/...), adiciona o domínio base
-                        val fullUrl = if (pet.photoUrl.startsWith("http")) pet.photoUrl else "${RetrofitClient.BASE_URL}${pet.photoUrl.trimStart('/')}"
-
-                        Glide.with(this@MapaPetActivity)
-                            .load(fullUrl)
-                            .placeholder(R.drawable.ic_pet_placeholder) // Imagem enquanto carrega
-                            .error(R.drawable.ic_pet_placeholder) // Imagem se der erro
-                            .circleCrop() // Deixa redondinha
-                            .into(binding.imgPet)
+        AlertDialog.Builder(this)
+            .setTitle("Gerenciar Cercas Virtuais")
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> {
+                        isAddingGeofence = true
+                        Toast.makeText(this, "TOQUE NO MAPA para criar a cerca", Toast.LENGTH_LONG).show()
                     }
-
-                    // 4. Se tiver localização salva, já mostra no mapa
-                    pet.lastLocation?.let { loc ->
-                        updateMapLocation(LatLng(loc.latitude, loc.longitude))
-                    }
+                    1 -> deleteAllGeofences()
+                    2 -> isAddingGeofence = false
                 }
             }
-            override fun onFailure(call: Call<PetDto>, t: Throwable) {
-                Toast.makeText(applicationContext, "Erro ao carregar pet", Toast.LENGTH_SHORT).show()
+            .show()
+    }
+
+    private fun confirmCreateGeofence(p: GeoPoint) {
+        AlertDialog.Builder(this)
+            .setTitle("Confirmar Cerca")
+            .setMessage("Criar uma zona segura de 100m aqui?")
+            .setPositiveButton("Criar") { _, _ ->
+                createGeofence(p)
+                isAddingGeofence = false
             }
+            .setNegativeButton("Cancelar") { _, _ -> isAddingGeofence = false }
+            .show()
+    }
+
+    private fun createGeofence(p: GeoPoint) {
+        val req = CreateGeofenceRequest("Zona Segura", p.latitude, p.longitude, 100.0)
+        RetrofitClient.instance.createGeofence(petId, req).enqueue(object : Callback<CreateGeofenceResponse> {
+            override fun onResponse(call: Call<CreateGeofenceResponse>, r: Response<CreateGeofenceResponse>) {
+                if (r.isSuccessful) {
+                    Toast.makeText(applicationContext, "Cerca criada!", Toast.LENGTH_SHORT).show()
+                    loadGeofences()
+                } else {
+                    Toast.makeText(applicationContext, "Erro ao criar", Toast.LENGTH_SHORT).show()
+                }
+            }
+            override fun onFailure(call: Call<CreateGeofenceResponse>, t: Throwable) {}
         })
     }
 
-    private fun updateBatteryUI(level: Int) {
-        binding.tvBattery.text = "$level%"
+    private fun loadGeofences() {
+        RetrofitClient.instance.getGeofences(petId).enqueue(object : Callback<GeofenceResponse> {
+            override fun onResponse(call: Call<GeofenceResponse>, response: Response<GeofenceResponse>) {
+                if (response.isSuccessful && response.body() != null) {
+                    // Limpa antigas da tela e da lista
+                    binding.map.overlays.removeAll(geofencePolygons)
+                    geofencePolygons.clear()
 
-        // Muda a cor se a bateria estiver baixa (< 20%)
-        if (level <= 20) {
-            binding.tvBattery.setTextColor(getColor(android.R.color.holo_red_dark))
+                    val zones = response.body()!!.zones
+                    for (zone in zones) {
+                        // --- CORREÇÃO PRINCIPAL AQUI ---
+                        // 1. Cria o objeto Polygon
+                        val circle = Polygon()
+
+                        // 2. Gera os pontos do círculo e atribui ao polígono
+                        circle.points = Polygon.pointsAsCircle(GeoPoint(zone.centerLat, zone.centerLng), zone.radius)
+
+                        // 3. Configura a cor (Preenchimento e Borda)
+                        circle.fillPaint.color = 0x220000FF // Azul transparente (ARGB)
+                        circle.fillPaint.style = Paint.Style.FILL
+                        circle.outlinePaint.color = Color.BLUE
+                        circle.outlinePaint.strokeWidth = 2f
+                        circle.title = zone.name
+
+                        // 4. Adiciona ao mapa
+                        binding.map.overlays.add(0, circle) // Adiciona no índice 0 (fundo)
+                        geofencePolygons.add(circle) // Guarda na lista para apagar depois
+                    }
+                    binding.map.invalidate() // Força redesenho
+                }
+            }
+            override fun onFailure(call: Call<GeofenceResponse>, t: Throwable) {}
+        })
+    }
+
+    private fun deleteAllGeofences() {
+        RetrofitClient.instance.getGeofences(petId).enqueue(object : Callback<GeofenceResponse> {
+            override fun onResponse(call: Call<GeofenceResponse>, response: Response<GeofenceResponse>) {
+                if (response.isSuccessful) {
+                    response.body()?.zones?.forEach { z ->
+                        RetrofitClient.instance.deleteGeofence(z.id).enqueue(object : Callback<DeleteGeofenceResponse>{
+                            override fun onResponse(call: Call<DeleteGeofenceResponse>, r: Response<DeleteGeofenceResponse>) {}
+                            override fun onFailure(call: Call<DeleteGeofenceResponse>, t: Throwable) {}
+                        })
+                    }
+                    // Remove visualmente
+                    binding.map.overlays.removeAll(geofencePolygons)
+                    geofencePolygons.clear()
+                    binding.map.invalidate()
+                    Toast.makeText(applicationContext, "Cercas removidas", Toast.LENGTH_SHORT).show()
+                }
+            }
+            override fun onFailure(call: Call<GeofenceResponse>, t: Throwable) {}
+        })
+    }
+
+    // --- DADOS DO PET ---
+
+    private fun loadPetDetails() {
+        RetrofitClient.instance.getPetDetails(petId).enqueue(object : Callback<PetDto> {
+            override fun onResponse(call: Call<PetDto>, r: Response<PetDto>) {
+                if (r.isSuccessful && r.body() != null) updateUI(r.body()!!)
+            }
+            override fun onFailure(call: Call<PetDto>, t: Throwable) {}
+        })
+    }
+
+    private fun updateUI(pet: PetDto) {
+        binding.tvPetName.text = pet.name
+
+        if (pet.isOnline) {
+            binding.tvLastSeen.text = "Status: Online"
+            binding.tvLastSeen.setTextColor(getColor(android.R.color.holo_green_dark))
         } else {
-            binding.tvBattery.setTextColor(getColor(R.color.green_700))
+            binding.tvLastSeen.text = "Status: Offline"
+            binding.tvLastSeen.setTextColor(getColor(android.R.color.darker_gray))
+        }
+
+        binding.tvBattery.text = "${pet.batteryLevel}%"
+        if (pet.batteryLevel <= 20) binding.tvBattery.setTextColor(getColor(android.R.color.holo_red_dark))
+        else binding.tvBattery.setTextColor(getColor(br.edu.fatecpg.patatagapp.R.color.green_700))
+
+        if (!pet.photoUrl.isNullOrEmpty()) {
+            var fullUrl = pet.photoUrl
+            if (!fullUrl.startsWith("http")) {
+                val baseUrl = "http://192.168.15.73:5000" // AJUSTE SEU IP
+                fullUrl = "$baseUrl${pet.photoUrl}"
+            }
+            try { Glide.with(this).load(fullUrl).circleCrop().into(binding.imgPet) } catch (e: Exception){}
+        }
+
+        pet.lastLocation?.let { loc ->
+            val newPos = GeoPoint(loc.latitude, loc.longitude)
+
+            // Marcador
+            if (petMarker == null) {
+                petMarker = Marker(binding.map)
+                petMarker?.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                petMarker?.title = pet.name
+                petMarker?.icon = resources.getDrawable(R.drawable.ic_pet_placeholder, null) // Ícone padrão se der erro
+                binding.map.overlays.add(petMarker)
+            }
+            petMarker?.position = newPos
+
+            if (isFirstUpdate) {
+                binding.map.controller.animateTo(newPos)
+                isFirstUpdate = false
+            }
+            binding.map.invalidate()
         }
     }
 
-    // --- LOOP DE ATUALIZAÇÃO (TEMPO REAL) ---
-
     private val updateRunnable = object : Runnable {
         override fun run() {
-            fetchPetDataRealtime()
+            RetrofitClient.instance.getPetDetails(petId).enqueue(object : Callback<PetDto> {
+                override fun onResponse(call: Call<PetDto>, response: Response<PetDto>) {
+                    if (response.isSuccessful && response.body() != null) updateUI(response.body()!!)
+                }
+                override fun onFailure(call: Call<PetDto>, t: Throwable) {}
+            })
             handler.postDelayed(this, updateInterval)
         }
     }
 
-    private fun startLocationUpdates() {
-        handler.post(updateRunnable)
+    private fun startLocationUpdates() { handler.post(updateRunnable) }
+    private fun stopLocationUpdates() { handler.removeCallbacks(updateRunnable) }
+
+    override fun onResume() {
+        super.onResume()
+        binding.map.onResume()
     }
 
-    private fun stopLocationUpdates() {
-        handler.removeCallbacks(updateRunnable)
-    }
-
-    private fun fetchPetDataRealtime() {
-        // No seu backend atualizado, o endpoint /pets/{id} retorna tudo atualizado (Loc + Bateria)
-        // Então vamos chamar ele periodicamente para manter tudo fresco.
-
-        RetrofitClient.instance.getPetDetails(petId).enqueue(object : Callback<PetDto> {
-            override fun onResponse(call: Call<PetDto>, response: Response<PetDto>) {
-                if (response.isSuccessful && response.body() != null) {
-                    val pet = response.body()!!
-
-                    // Atualiza bateria
-                    updateBatteryUI(pet.batteryLevel)
-
-                    // Atualiza status
-                    binding.tvLastSeen.text = if (pet.isOnline) "Status: Online" else "Status: Offline"
-
-                    // Atualiza mapa se tiver localização
-                    pet.lastLocation?.let { loc ->
-                        updateMapLocation(LatLng(loc.latitude, loc.longitude))
-                    }
-                }
-            }
-            override fun onFailure(call: Call<PetDto>, t: Throwable) {
-                // Falha silenciosa para não incomodar o usuário a cada 5s
-            }
-        })
-    }
-
-    private fun updateMapLocation(location: LatLng) {
-        mMap?.let { map ->
-            map.clear() // Limpa marcador anterior
-            map.addMarker(MarkerOptions().position(location).title("Localização Atual"))
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(location, 17f))
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        stopLocationUpdates() // Para o loop quando sair da tela
+    override fun onPause() {
+        super.onPause()
+        binding.map.onPause()
+        stopLocationUpdates()
     }
 }

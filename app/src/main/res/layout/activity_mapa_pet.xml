@@ -7,11 +7,11 @@
     tools:context=".MapaPetActivity">
 
     <!-- Mapa -->
-    <fragment
+    <org.osmdroid.views.MapView
         android:id="@+id/map"
-        android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        tilesource="Mapnik" />
 
     <!-- Botão Voltar Flutuante -->
     <ImageButton
@@ -106,7 +106,7 @@
 
             <!-- Botões de Ação -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="375dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:baselineAligned="false"
@@ -114,78 +114,26 @@
                 android:weightSum="3">
 
                 <LinearLayout
-                    android:id="@+id/btnActionHistory"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_history"
-                        app:tint="@color/brandGray" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Histórico"
-                        android:textColor="@color/brandGray"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <LinearLayout
                     android:id="@+id/btnActionGeofence"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:gravity="center"
-                    android:orientation="vertical"
                     android:padding="8dp">
 
                     <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:layout_width="52dp"
+                        android:layout_height="39dp"
                         android:src="@drawable/ic_geofence"
                         app:tint="@color/brandGray" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
                         android:text="Cerca Virtual"
                         android:textColor="@color/brandGray"
-                        android:textSize="12sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/btnActionSound"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="8dp">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_sound"
-                        app:tint="@color/brandGray" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Emitir Som"
-                        android:textColor="@color/brandGray"
-                        android:textSize="12sp" />
+                        android:textSize="20sp" />
                 </LinearLayout>
 
             </LinearLayout>

@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class UpdateUserRequest(
     val name: String? = null,
+    val password: String? = null,
     @SerializedName("profile_image")
     val profileImage: String? = null
 )
