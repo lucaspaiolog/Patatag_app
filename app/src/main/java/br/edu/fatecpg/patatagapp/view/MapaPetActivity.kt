@@ -226,7 +226,7 @@ class MapaPetActivity : AppCompatActivity() {
         if (!pet.photoUrl.isNullOrEmpty()) {
             var fullUrl = pet.photoUrl
             if (!fullUrl.startsWith("http")) {
-                val baseUrl = "http://192.168.15.73:5000" // AJUSTE SEU IP
+                val baseUrl = "http://192.168.X.X:5000" // AJUSTE SEU IP
                 fullUrl = "$baseUrl${pet.photoUrl}"
             }
             try { Glide.with(this).load(fullUrl).circleCrop().into(binding.imgPet) } catch (e: Exception){}
